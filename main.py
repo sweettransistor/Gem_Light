@@ -19,6 +19,11 @@ connectto = 0
 colorlist = ['red', 'green', 'blue', 'orange', 'cyan', 'purple', 'cross', 'rflash', 'gflash', 'bflash', 'off'] 
 connect_to = None
 send_color = None
+client = None
+btlist = None
+addlist = None
+
+UUID_NUS = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
 
 async def scan():
     # Scan for devices
@@ -45,7 +50,7 @@ class MainScreen(Screen):
 class LoadScreen(Screen):
     #btntext = None
 
-    async def buttons(self):
+    def buttons(self):
         self.ids.container.clear_widgets()
         for item in btlist:
             btntext = str(item)
@@ -58,40 +63,65 @@ class LoadScreen(Screen):
         self.ids.container.add_widget(button1)
 
     def colors(self):
-        # self.ids.container.clear_widgets()
+        self.ids.container.clear_widgets()
         for clr in colorlist:
             colortext = str(clr)
             clrbtn = Button(text=colortext)
             clrbtn.bind(on_press=self.assign_clr)
             self.ids.container.add_widget(clrbtn)
-    
-    def scan_button(self, instance):
-        exit(_ExitCode = 1)
+        
+        button2 = Button(text='Disconnect')    
+        button2.bind(on_press=self.BTdisconnect)
+        self.ids.container.add_widget(button2)
+        # if client.is_connected:
 
-    async def assign_var(self, instance):
+    async def BTdisconnect():
+        asyncio.create_task(client.disconnect())
+        exit(0)
+
+    def scan_button(self, instance):
+        main()
+
+    def assign_var(self, instance):
         global connect_to 
         connect_to = instance.text
         print(connect_to)
         self.ids.container.clear_widgets()
 
-        await self.connectBT(connect_to)
+        self.connectBT(connect_to)
+        
         self.colors()
 
     def assign_clr(self, instance1):
-        send_color = instance1.text
-        p = Popen(['python', 'subroutine.py', connect_to, send_color], shell=True)
-        returncode = p.wait()
+        # send_color = 
+        string_to_send = instance1.text
+        bytes_ts = string_to_send.encode("utf-8")
+
+        async def send_bytes(bytes):
+                    await client.write_gatt_char(UUID_NUS, bytes)
+                    print(f"Sent: {bytes.decode('utf-8')}")
+
+        send_bytes(bytes_ts)
+
+        # self.colors()
+        
+        # await client.write_gatt_char(UUID_NUS, bytes_ts)
+        # print(f"Sent: {bytes_ts.decode('utf-8')}")
+        # p = Popen(['python', 'subroutine.py', connect_to, send_color], shell=True)
+        # returncode = p.wait()
         
     async def connectBT(self, addressname):
         index = btlist.index(addressname)
         address = addlist[index]
+        global client
         client = BleakClient(address)
-        await client.connect()
+        asyncio.create_task(client.connect())
         if client.is_connected:
             print(f"Connected to {addressname}")
 
         else:
             print(f"Failed to connect to {addressname}")
+
 
 class ReturnScreen(Screen):     
      
@@ -127,15 +157,59 @@ class MyScreen3(Screen):
         print('Hello from screen 3')
 
 class Gem_Light(App):
+    task = None
+
     def app_method(self):     
         return Builder.load_file('Gem_Light.kv')
 
+    def app_func(self):
+        '''This will run both methods asynchronously and then block until they
+        are finished
+        '''
+        self.task = asyncio.ensure_future(self.waste_time_freely())
 
-if __name__ == '__main__':
+        async def run_wrapper():
+            # we don't actually need to set asyncio as the lib because it is
+            # the default, but it doesn't hurt to be explicit
+            await self.async_run(async_lib='asyncio')
+            print('App done')
+            self.task.cancel()
+
+        return asyncio.gather(run_wrapper(), self.task)
+
+    async def waste_time_freely(self):
+        '''This method is also run by the asyncio loop and periodically prints
+        something.
+        '''
+        try:
+            i = 0
+            while True:
+                # if self.root is not None:
+                    # status = self.root.ids.label.status
+                    # print('{} on the beach'.format(status))
+
+                    # # get some sleep
+                    # if self.root.ids.btn1.state != 'down' and i >= 2:
+                    #     i = 0
+                    #     print('Yawn, getting tired. Going to sleep')
+                    #     self.root.ids.btn1.trigger_action()
+
+                i += 1
+                await asyncio.sleep(2)
+        except asyncio.CancelledError as e:
+            print('Wasting time was canceled', e)
+        finally:
+            # when canceled, print that it finished
+            print('Done wasting time')
+    
+def main():
     global btlist, addlist
     btlist, addlist = asyncio.run(scan())
-
     # btlist = [x for x in btlist if x is not None]
     print(btlist)
     print(addlist)
-    Gem_Light().run()
+    
+    
+if __name__ == '__main__':
+    main()
+    Gem_Light().run()  
