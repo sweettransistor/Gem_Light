@@ -75,8 +75,12 @@ class LoadScreen(Screen):
         self.ids.container.add_widget(button2)
         # if client.is_connected:
 
-    async def BTdisconnect():
-        asyncio.create_task(client.disconnect())
+    def BTdisconnect(self, instance):
+        global client
+        async def disconnectBT():
+            await client.disconnect()
+        
+        asyncio.run(disconnectBT())
         exit(0)
 
     def scan_button(self, instance):
@@ -87,8 +91,20 @@ class LoadScreen(Screen):
         connect_to = instance.text
         print(connect_to)
         self.ids.container.clear_widgets()
+            
+        async def connectBT(addressname):
+            index = btlist.index(addressname)
+            address = addlist[index]
+            global client
+            client = BleakClient(address)
+            await client.connect()
+            if client.is_connected:
+                print(f"Connected to {addressname}")
 
-        self.connectBT(connect_to)
+            else:
+                print(f"Failed to connect to {addressname}")
+
+        asyncio.run(connectBT(connect_to))
         
         self.colors()
 
@@ -101,7 +117,7 @@ class LoadScreen(Screen):
                     await client.write_gatt_char(UUID_NUS, bytes)
                     print(f"Sent: {bytes.decode('utf-8')}")
 
-        send_bytes(bytes_ts)
+        asyncio.run(send_bytes(bytes_ts))
 
         # self.colors()
         
@@ -109,18 +125,7 @@ class LoadScreen(Screen):
         # print(f"Sent: {bytes_ts.decode('utf-8')}")
         # p = Popen(['python', 'subroutine.py', connect_to, send_color], shell=True)
         # returncode = p.wait()
-        
-    async def connectBT(self, addressname):
-        index = btlist.index(addressname)
-        address = addlist[index]
-        global client
-        client = BleakClient(address)
-        asyncio.create_task(client.connect())
-        if client.is_connected:
-            print(f"Connected to {addressname}")
 
-        else:
-            print(f"Failed to connect to {addressname}")
 
 
 class ReturnScreen(Screen):     
