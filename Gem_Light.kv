@@ -4,7 +4,6 @@ ScreenManager:
     transition: RiseInTransition()
     MainScreen:
     LoadScreen:
-    ReturnScreen:
 
 <MainScreen>:
     name: 'GLOWING GEM Controller'
@@ -32,27 +31,6 @@ ScreenManager:
                 bold:True
                 background_color:'00FFCE'
                 on_release: root.manager.current = 'LoadScreen'
-#           Button:
-#               text: 'Create new debt profile?'
-#               font_size:20
-#               bold:True
-#               background_color:'00FFCE'
-#               on_release: root.manager.current = root.manager.next()
-#               Button:
-#                    text: 'Go to previous screen'
-#                    on_release: root.manager.current = root.manager.previous()
-#               Button:
-#                    text: 'This screen method'
-#                    on_release: root.screen_method()
-#                Button:
-#                    text: 'Other screen method (from screen 2)'
-#                    on_release: root.manager.get_screen('screen_two').screen_method()
-#                Button:
-#                    text: 'Screen manager method'
-#                    on_release: root.manager.screen_manager_method()
-#                Button:
-#                    text: 'App method'
-#                    on_release: app.app_method()
 
 <LoadScreen>:
     name: 'LoadScreen'
@@ -73,60 +51,3 @@ ScreenManager:
                 #id: button
                 text: 'Scan for Devices..'
                 on_release: root.buttons()
-
-#            text: 'Press Here'
-#            on_release: root.screen_method()
-#        for x in list:
-#            Button:
-#                text: str(x)
-#                on_release: root.manager.current = 'screen_three'
-#        Button:
-#            text: 'Go to next screen'
-#            on_release: root.manager.current = root.manager.next()
-#        Button:
-#            text: 'Go to previous screen'
-#            on_release: root.manager.current = root.manager.previous()
-#        Button:
-#            text: 'This screen method'
-#            on_release: root.screen_method()
-#        Button:
-#            text: 'Other screen method (from screen 1)'
-#            on_release: root.manager.get_screen('screen_one').screen_method()
-#        Button:
-#            text: 'Screen manager method'
-#            on_release: root.manager.screen_manager_method()
-#        Button:
-#            text: 'App method'
-#            on_release: app.app_method()
-
-<ReturnScreen>:
-    name: 'Return_Screen'
-
-    BoxLayout:
-        orientation: 'vertical'
-        Image:
-            source: 'logo.png'
-            pos_hint: {"center_x":0.5, "center_y":0.5}
-        Label:
-            text: "Select light pattern:"
-        Button:
-            text: 'Red'
-            on_release: root.manager.current = 'screen_one'
-        Button:
-            text: 'Go to next screen'
-            on_release: root.manager.current = root.manager.next()
-        Button:
-            text: 'Go to previous screen'
-            on_release: root.manager.current = root.manager.previous()
-        Button:
-            text: 'This screen method'
-            on_release: root.screen_method()
-        Button:
-            text: 'Other screen method (from screen 1)'
-            on_release: root.manager.get_screen('screen_one').screen_method()
-        Button:
-            text: 'Screen manager method'
-            on_release: root.manager.screen_manager_method()
-        Button:
-            text: 'App method'
-            on_release: app.app_method()
